@@ -1,0 +1,112 @@
+import streamlit as st
+
+# Configuración de la página
+st.set_page_config(page_title="Una pregunta importante", page_icon="❤️", layout="centered")
+
+# Estilos CSS para centrar todo y hacer que el botón "Sí" crezca dinámicamente
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background-color: #ffe6e6;
+    }
+    .title-text {
+        text-align: center;
+        color: #d90429;
+        font-family: sans-serif;
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+    }
+    .success-text {
+        text-align: center;
+        color: #7209b7;
+        font-family: sans-serif;
+        font-size: 3rem;
+        font-weight: bold;
+        margin-top: 3rem;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# Inicializar el estado del contador de rechazos (para hacer crecer el botón "Sí")
+if "rechazos" not in st.session_state:
+    st.session_state.rechazos = 0
+
+if "respondido" not in st.session_state:
+    st.session_state.respondido = False
+
+# Pantalla de éxito si acepta
+if st.session_state.respondido:
+    st.markdown('<p class="success-text">¡Te amo más! ❤️🥰</p>', unsafe_allow_html=True)
+    st.balloons()
+    if st.button("Volver a jugar"):
+        st.session_state.rechazos = 0
+        st.session_state.respondido = False
+        st.rerun()
+
+else:
+    # Título principal
+    st.markdown('<p class="title-text">Te amo... ¿Tú me amas?</p>', unsafe_allow_html=True)
+
+    # Creamos dos columnas para los botones con espacio flexible
+    col1, col2 = st.columns(2)
+
+    # El tamaño del botón "Sí" aumenta según cuántas veces intentó decir "No"
+    # Usamos HTML personalizado con Streamlit para forzar el tamaño del botón "Sí"
+    tamano_fuente = 16 + (st.session_state.rechazos * 12)
+    padding_vertical = 10 + (st.session_state.rechazos * 8)
+    padding_horizontal = 20 + (st.session_state.rechazos * 15)
+
+    with col1:
+        # Botón dinámico de SÍ con estilo en línea para que crezca
+        st.markdown(
+            f"""
+            <style>
+            div.stButton > button:first-child {{
+                font-size: {tamano_fuente}px !important;
+                padding-top: {padding_vertical}px !important;
+                padding-bottom: {padding_vertical}px !important;
+                padding-left: {padding_horizontal}px !important;
+                padding-right: {padding_horizontal}px !important;
+                background-color: #ff4d6d !important;
+                color: white !important;
+                border-radius: 12px !important;
+                border: none !important;
+                font-weight: bold;
+            }}
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        if st.button("¡Sí! 😍", use_container_width=True):
+            st.session_state.respondido = True
+            st.rerun()
+
+    with col2:
+        # Botón de NO
+        if st.button("No 😢", use_container_width=True):
+            st.session_state.rechazos += 1
+            if st.session_state.rechazos > 5:
+                # Si insiste mucho, podemos mostrar un mensajito gracioso o vaciar el botón
+                st.toast("¡Esa opción ya no cuenta, el amor ganó! 🤭", icon="💖")
+            st.rerun()
+
+    # Mensaje dinámico opcional si intenta escapar mucho
+    if st.session_state.rechazos > 0:
+        frases = [
+            "¿Estás segura? Piénsalo bien...",
+            "¡Ay, pero mira ese botón de al lado tan bonito!",
+            "Ese botón de 'No' está sospechoso...",
+            "¡Ya casi no se ve el 'No' de lo mucho que te amo!",
+            "¡Imposible decir que no!",
+        ]
+        idx = min(st.session_state.rechazos - 1, len(frases) - 1)
+        st.markdown(
+            f"<p style='text-align: center; color: #555; font-style: italic; margin-top: 2rem;'>{frases[idx]}</p>",
+            unsafe_allow_html=True,
+        )
